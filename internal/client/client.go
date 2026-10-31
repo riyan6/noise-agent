@@ -85,9 +85,6 @@ func (c *Client) do(ctx context.Context, method, path string, body any, out any)
 		return fmt.Errorf("unexpected HTTP %d: %s", resp.StatusCode, strings.TrimSpace(string(raw)))
 	}
 
-	if out == nil {
-		return nil
-	}
 	var env struct {
 		Status string          `json:"status"`
 		Data   json.RawMessage `json:"data"`
@@ -98,31 +95,15 @@ func (c *Client) do(ctx context.Context, method, path string, body any, out any)
 	if env.Status != "success" {
 		return fmt.Errorf("API returned status %q", env.Status)
 	}
+	if out == nil {
+		return nil
+	}
 	if len(env.Data) == 0 || string(env.Data) == "null" {
 		return nil
 	}
 	return json.Unmarshal(env.Data, out)
 }
 
-func (c *Client) GetConfig(ctx context.Context) (model.AgentConfig, error) {
-	var cfg model.AgentConfig
-	err := c.do(ctx, http.MethodGet, "/config", nil, &cfg)
-	return cfg, err
-}
-
 func (c *Client) PostInfo(ctx context.Context, info model.AgentInfo) error {
 	return c.do(ctx, http.MethodPost, "/info", info, nil)
-}
-
-func (c *Client) PostReport(ctx context.Context, report model.Report) (model.ReportAck, error) {
-	var ack model.ReportAck
-	err := c.do(ctx, http.MethodPost, "/report", report, &ack)
-	return ack, err
-}
-
-func (c *Client) PostLatencyResults(ctx context.Context, results []model.LatencyResult) error {
-	payload := struct {
-		Results []model.LatencyResult `json:"results"`
-	}{Results: results}
-	return c.do(ctx, http.MethodPost, "/latency-results", payload, nil)
 }

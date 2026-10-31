@@ -7,6 +7,7 @@ MONTH_ROTATE="${NOISE_MONTH_ROTATE:-1}"
 DOWNLOAD_URL="${NOISE_AGENT_DOWNLOAD_URL:-}"
 BASE_URL="${NOISE_AGENT_BASE_URL:-}"
 GITHUB_REPO="${NOISE_GITHUB_REPO:-riyan6/noise-agent}"
+AGENT_VERSION="${NOISE_AGENT_VERSION:-v0.2.0}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -88,12 +89,13 @@ fi
 CANDIDATES+=(
   "${ENDPOINT%/}/agent/${BINARY_NAME}"
   "${ENDPOINT%/}/downloads/${BINARY_NAME}"
-  "https://github.com/${GITHUB_REPO}/releases/latest/download/${BINARY_NAME}"
+  "https://github.com/${GITHUB_REPO}/releases/download/${AGENT_VERSION}/${BINARY_NAME}"
 )
 
 for url in "${CANDIDATES[@]}"; do
   echo "==> Downloading noise-agent from ${url} ..."
-  if fetch_file "$url" "$TMP_BIN" && [[ -s "$TMP_BIN" ]]; then
+  # SPA Workers can return index.html with HTTP 200 for missing download paths.
+  if fetch_file "$url" "$TMP_BIN" && [[ "$(LC_ALL=C head -c 4 "$TMP_BIN")" == $'\x7fELF' ]]; then
     DOWNLOADED=1
     break
   fi

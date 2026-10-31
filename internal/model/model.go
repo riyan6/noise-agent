@@ -23,12 +23,13 @@ type AgentTask struct {
 }
 
 type AgentConfig struct {
-	Version  string       `json:"version"`
-	Refresh  int          `json:"refresh"`
-	Traffic  TrafficLimit `json:"traffic"`
-	Timezone string       `json:"timezone"`
-	GeoIP    GeoIPConfig  `json:"geoip"`
-	Tasks    []AgentTask  `json:"tasks"`
+	ArchiveSeconds int          `json:"archiveSeconds"`
+	Version        string       `json:"version"`
+	Refresh        int          `json:"refresh"`
+	Traffic        TrafficLimit `json:"traffic"`
+	Timezone       string       `json:"timezone"`
+	GeoIP          GeoIPConfig  `json:"geoip"`
+	Tasks          []AgentTask  `json:"tasks"`
 }
 
 type AgentInfo struct {
@@ -47,6 +48,7 @@ type AgentInfo struct {
 }
 
 type Report struct {
+	Time      int64   `json:"time"`
 	BootID    string  `json:"bootId"`
 	Sequence  int64   `json:"sequence"`
 	Uptime    float64 `json:"uptime"`
@@ -60,9 +62,27 @@ type Report struct {
 	TotalDown int64   `json:"totalDown"`
 }
 
-type ReportAck struct {
-	ReceivedAt    int64  `json:"receivedAt"`
-	ConfigVersion string `json:"configVersion"`
+// offset milliseconds, sequence, uptime, CPU, MEM, DISK, load, up, down, totalUp, totalDown.
+type PackedSample [11]float64
+type Archive struct {
+	BootID  string          `json:"bootId"`
+	Start   int64           `json:"start"`
+	Samples []PackedSample  `json:"samples"`
+	Latency []LatencyResult `json:"latency"`
+}
+type ClientMessage struct {
+	Type    string          `json:"type"`
+	Report  *Report         `json:"report,omitempty"`
+	Results []LatencyResult `json:"results,omitempty"`
+	Archive *Archive        `json:"archive,omitempty"`
+}
+type ServerMessage struct {
+	Type     string      `json:"type"`
+	Config   AgentConfig `json:"config"`
+	BootID   string      `json:"bootId"`
+	Start    int64       `json:"start"`
+	Sequence int64       `json:"sequence"`
+	Message  string      `json:"message"`
 }
 
 type LatencyResult struct {

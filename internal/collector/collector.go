@@ -13,7 +13,7 @@ import (
 	"noise-agent/internal/model"
 )
 
-const Version = "0.1.0"
+const Version = "0.2.0"
 const maxSafeCounter = 9007199254740991 // 2^53 - 1
 
 type cpuTimes struct {

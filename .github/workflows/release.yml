@@ -24,6 +24,12 @@ jobs:
           go-version: 'stable'
           cache: true
 
+      - name: Validate installer and agent
+        run: |
+          bash -n install.sh
+          bash tests/install.test.sh
+          go test ./...
+
       - name: Build Linux binaries
         run: |
           mkdir -p dist
@@ -44,12 +50,12 @@ jobs:
           cd dist
           sha256sum noise-agent-linux-* > sha256sums.txt
 
-      - name: Publish Release (on branch push -> v0.1.0 latest)
+      - name: Publish Release (on branch push -> v0.2.0 latest)
         if: "!startsWith(github.ref, 'refs/tags/')"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="v0.1.0"
+          TAG="v0.2.0"
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/* --clobber
           else
